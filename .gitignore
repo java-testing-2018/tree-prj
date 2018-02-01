@@ -1,0 +1,10 @@
+build/
+out/
+.gradle/
+.idea/
+tmp/
+
+## File-based project format
+*.ipr
+*.iws
+*.iml

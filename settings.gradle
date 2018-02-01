@@ -1,0 +1,6 @@
+rootProject.name = 'tree-prj'
+
+include 'dashboard-server'
+include 'gateway-server'
+include 'discovery-server'
+include 'tree-service'

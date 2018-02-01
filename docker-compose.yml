@@ -1,0 +1,56 @@
+version: "2.1"
+services:
+  gateway-server:
+    image: "tree-prj/gateway-server:0.0.1-SNAPSHOT"
+    ports:
+    - 9100:9100
+    environment:
+    - SERVICE_NAME=gateway-server
+    - SPRING_PROFILES_ACTIVE=docker
+    - JVM_OPTS=-Xmx50M
+    depends_on:
+      - discovery-server
+
+  dashboard-server:
+    image: "tree-prj/dashboard-server:0.0.1-SNAPSHOT"
+    ports:
+    - 9200:9200
+    environment:
+    - SERVICE_NAME=dashboard-server
+    - SPRING_PROFILES_ACTIVE=docker
+    - JVM_OPTS=-Xmx100M
+
+  discovery-server:
+    container_name: discovery-server
+    image: "tree-prj/discovery-server:0.0.1-SNAPSHOT"
+    environment:
+    - SERVICE_NAME=discovery-server
+    - SPRING_PROFILES_ACTIVE=docker
+    - JVM_OPTS=-Xmx50M
+
+  tree-service:
+    image: "tree-prj/tree-service:0.0.1-SNAPSHOT"
+    environment:
+    - JVM_OPTS=-Xmx100M
+    - SERVICE_NAME=tree-service
+    - DB_HOST=postgres-db
+    - DB_NAME=postgres
+    - DB_USER=postgres
+    - DB_PASSWORD=qwerty
+    - SPRING_PROFILES_ACTIVE=docker
+    links:
+      - discovery-server
+      - postgres-db
+    depends_on:
+      - postgres-db
+      - discovery-server
+
+  postgres-db:
+    image: postgres
+    container_name: postgres-db
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=qwerty
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
