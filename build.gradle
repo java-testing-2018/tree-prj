@@ -56,6 +56,7 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'docker'
     apply plugin: "org.springframework.boot"
+    apply plugin: "jacoco"
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
@@ -101,6 +102,19 @@ subprojects {
     jar {
         archiveName = "${jar.baseName}.${extension}"
     }
+
+    test {
+        finalizedBy jacocoTestReport
+    }
+
+    jacocoTestReport {
+        reports {
+            xml.enabled false
+            csv.enabled false
+            html.destination "$buildDir/jacoco/report"
+        }
+    }
+
 }
 
 task wrapper(type: Wrapper) {

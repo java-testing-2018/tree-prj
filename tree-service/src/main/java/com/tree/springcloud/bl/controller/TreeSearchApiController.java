@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import static com.tree.springcloud.bl.controller.TreeSearchApiController.URI;
@@ -29,12 +31,12 @@ public class TreeSearchApiController {
 
 
     @GetMapping("childs/{id}")
-    public List<Long> getChildList(@PathVariable("id") Long id) {
+    public Collection<Long> getChildList(@PathVariable("id") Long id) {
         return treeService.findChildren(id);
     }
 
     @GetMapping("parents/{id}")
-    public List<Long> getParentList(@PathVariable("id") Long id) {
+    public Collection<Long> getParentList(@PathVariable("id") Long id) {
         return treeService.findParents(id);
     }
 }

@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Collection;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -69,6 +70,7 @@ public class TreeServiceTest {
 
         assertThat(newNode.getId(), is(id));
         assertThat(newNode.getParentId(), is(nullValue()));
+        assertThat(newNode.getChilds(), hasSize(0));
 
         assertThat(nodeRepository.count(), is(1L));
     }
@@ -91,6 +93,8 @@ public class TreeServiceTest {
         Node newNode = treeService.findOrCreate(id, parentId);
         assertThat(newNode.getId(), is(id));
         assertThat(newNode.getParentId(), is(parentId));
+
+        assertThat(nodeRepository.findOne(parentId).getChilds(), hasItem(id));
 
         assertThat(nodeRepository.count(), is(expectedCount + 1));
     }
@@ -160,6 +164,7 @@ public class TreeServiceTest {
         Node dbNode = nodeRepository.findOne(id);
         assertThat(dbNode, is(notNullValue()));
 
+
         assertTrue(treeService.updateId(id, newId));
 
         List<Node> result = nodeRepository.findByParentId(dbNode.getParentId());
@@ -190,7 +195,7 @@ public class TreeServiceTest {
      */
     @Test
     public void testParents() {
-        List<Long> parentIds = treeService.findParents(4L);
+        Collection<Long> parentIds = treeService.findParents(4L);
         assertThat(parentIds, Matchers.containsInAnyOrder(8L, 5L));
     }
 
@@ -199,7 +204,7 @@ public class TreeServiceTest {
      */
     @Test(expected = VerifyException.class)
     public void testParentsNotExistedId() {
-        List<Long> parentIds = treeService.findParents(111L);
+        Collection<Long> parentIds = treeService.findParents(111L);
         assertThat(parentIds, Matchers.containsInAnyOrder(8L, 5L));
     }
 
@@ -208,7 +213,7 @@ public class TreeServiceTest {
      */
     @Test
     public void testChilds() {
-        List<Long> childsIds = treeService.findChildren(5L);
+        Collection<Long> childsIds = treeService.findChildren(5L);
         assertThat(childsIds, Matchers.containsInAnyOrder(2L, 4L, 7L));
     }
     /**
@@ -216,7 +221,7 @@ public class TreeServiceTest {
      */
     @Test(expected = VerifyException.class)
     public void testChildsNotExistedId() {
-        List<Long> childsIds = treeService.findChildren(111L);
+        Collection<Long> childsIds = treeService.findChildren(111L);
         assertThat(childsIds, Matchers.containsInAnyOrder(2L, 4L, 7L));
     }
 }

@@ -11,10 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.Deque;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -29,16 +27,20 @@ public class TreeService {
 
         Node dbNode = nodeRepository.findOne(id);
         if (dbNode != null) { // find
-            if (!Objects.equals(dbNode.getParentId(), parentId)) {
+
+            Node parentNode = nodeRepository.findOne(parentId);
+            if (!parentNode.getChilds().contains(id)) {
                 throw new VerifyException("No correct parrent id");
             }
             return dbNode;
         }
 
         if (parentId == null) { // parnet_id==null can be if it is first node
-            Verify.verify(!nodeRepository.existsByParentId(null));
+            Verify.verify(nodeRepository.count() == 0L);
         } else {
-            Verify.verify(nodeRepository.exists(parentId));
+            Node parentNode = nodeRepository.findOne(parentId);
+            Verify.verifyNotNull(parentNode);
+            parentNode.addChild(id);
         }
 
         return nodeRepository.save(new Node(id, parentId + ": " + id, parentId));
@@ -49,19 +51,22 @@ public class TreeService {
             return false;
         }
 
-        List<Long> nodesToDelete = traverseChilds(id);
+        Node node = nodeRepository.findOne(id);
+        List<Long> nodesToDelete = Lists.newArrayList(node.getChilds());
         nodesToDelete.add(id);
         return nodeRepository.deleteByIdIn(nodesToDelete) > 0;
     }
 
-    public List<Long> findChildren(Long id) {
-        Verify.verify(nodeRepository.exists(id), "The node is not exists");
-        return traverseChilds(id);
+    public Collection<Long> findChildren(Long id) {
+        Node node = Verify.verifyNotNull(nodeRepository.findOne(id), "The node is not exists");
+        return node.getChilds();
     }
 
-    public List<Long> findParents(Long id) {
+    public Collection<Long> findParents(Long id) {
         Verify.verify(nodeRepository.exists(id), "The node is not exists");
-        return traverseParents(id);
+        return nodeRepository.findByChildStringLike("%" + Node.SEP + Objects.toString(id) + Node.SEP + "%").stream()
+                .map(Node::getId)
+                .collect(Collectors.toSet());
     }
 
     public boolean updateId(Long id, Long newId)
@@ -77,40 +82,11 @@ public class TreeService {
             throw new AlreadyExistsException("New Id already exists");
         }
 
-        return nodeRepository.setNewId(id, newId) > 0;
-    }
-
-    @Deprecated
-    private void circularValidation(final Long id) {
-        List<Long> childIds = traverseChilds(id);
-        Verify.verify(childIds.contains(id), "Circular exception");
-    }
-
-    private List<Long> traverseParents(long id) {
-        Long nodeId;
-        List<Long> result = Lists.newArrayList();
-        Node node = nodeRepository.findOne(id);
-        while ((nodeId = node.getParentId()) != null) {
-            result.add(nodeId);
-            node = nodeRepository.findOne(nodeId);
+        boolean isUpdated;
+        if (isUpdated = nodeRepository.setNewId(id, newId) > 0) {
+            nodeRepository.updateChildInParents(id, newId);
         }
-        Collections.reverse(result);
-        return result;
+        return isUpdated;
     }
 
-    private List<Long> traverseChilds(long id) {
-        List<Long> result = Lists.newArrayList();
-        Deque<Long> toTraverse = Queues.newArrayDeque();
-        toTraverse.push(id);
-
-        do {
-            nodeRepository.findByParentId(toTraverse.pop()).stream()
-                    .map(Node::getId)
-                    .peek(toTraverse::push)
-                    .forEach(result::add);
-
-        } while (toTraverse.size() > 0);
-
-        return result;
-    }
 }

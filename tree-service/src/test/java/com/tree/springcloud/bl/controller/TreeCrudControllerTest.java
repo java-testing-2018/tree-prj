@@ -98,8 +98,6 @@ public class TreeCrudControllerTest {
         verify(treeService, times(1)).findOrCreate(id, parentId);
     }
 
-
-
     @Test
     public void testDelete() throws Exception {
         long id = RandomUtils.nextLong();
