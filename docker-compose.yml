@@ -20,6 +20,13 @@ services:
     - SPRING_PROFILES_ACTIVE=docker
     - JVM_OPTS=-Xmx100M
 
+  config-server:
+    image: "tree-prj/config-server:0.0.1-SNAPSHOT"
+    environment:
+    - SERVICE_NAME=config-server
+    - SPRING_PROFILES_ACTIVE=docker
+    - JVM_OPTS=-Xmx50M
+
   discovery-server:
     container_name: discovery-server
     image: "tree-prj/discovery-server:0.0.1-SNAPSHOT"
@@ -44,6 +51,7 @@ services:
     depends_on:
       - postgres-db
       - discovery-server
+      - config-server
 
   postgres-db:
     image: postgres

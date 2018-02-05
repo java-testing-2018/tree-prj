@@ -10,10 +10,12 @@ spring:
 #    testWhileIdle: true
 #    validationQuery: SELECT 1
 
-#  jpa.generate-ddl: true
   jpa:
     show-sql: true
-    properties.hibernate.format_sql: true
+    properties.hibernate:
+      show_sql: ${spring.jpa.show-sql}
+      format_sql: true
+
 ---
 spring:
   profiles: docker
