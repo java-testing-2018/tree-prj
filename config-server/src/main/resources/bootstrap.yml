@@ -1,0 +1,19 @@
+server.port: 9220
+
+spring:
+  application.name: config-server
+
+  cloud.config.server.git:
+    uri: https://github.com/java-testing-2018/tree-prj/
+    search-paths: config
+
+
+# https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-endpoints.html
+endpoints.restart.enabled: true
+#endpoints.pause.enabled = false
+#endpoints.resume.enabled = false
+#endpoints.restart.enabled = false
+#endpoints.env.enabled = false
+#endpoints.env.post.enabled = false
+
+
